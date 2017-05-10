@@ -1,5 +1,6 @@
 <?php
 
+require_once 'EncryptedFieldTrait.php'; //Traits are not auto-loaded by SilverStripe
 
 /**
  * Class EncryptedDatetime
@@ -10,7 +11,8 @@
  */
 class EncryptedDatetime extends SS_Datetime
 {
-
+    use EncryptedFieldTrait;
+    
     public $is_encrypted = true;
     /**
      * @var AtRestCryptoService
@@ -25,6 +27,7 @@ class EncryptedDatetime extends SS_Datetime
 
     public function setValue($value, $record = array())
     {
+    	$this->setEncryptionKeyFromRecord($record);
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
         } else {
@@ -36,7 +39,7 @@ class EncryptedDatetime extends SS_Datetime
     {
         // Test if we're actually an encrypted value;
         if (ctype_xdigit($value) && strlen($value) > 130) {
-            return $this->service->decrypt($value);
+            return $this->service->decrypt($value, $this->getEncryptionKey());
         }
         return $value;
     }
@@ -65,7 +68,7 @@ class EncryptedDatetime extends SS_Datetime
     public function prepValueForDB($value)
     {
         $value = parent::prepValueForDB($value);
-        $ciphertext = $this->service->encrypt($value);
+        $ciphertext = $this->service->encrypt($value, $this->getEncryptionKey());
         $this->value = $ciphertext;
         return $ciphertext;
     }

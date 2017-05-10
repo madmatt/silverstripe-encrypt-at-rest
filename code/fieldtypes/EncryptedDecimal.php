@@ -1,5 +1,7 @@
 <?php
 
+require_once 'EncryptedFieldTrait.php'; //Traits are not auto-loaded by SilverStripe
+
 /**
  * Class EncryptedDatetime
  * @package EncryptAtRest\Fieldtypes
@@ -9,7 +11,8 @@
  */
 class EncryptedDecimal extends Decimal
 {
-
+    use EncryptedFieldTrait;
+    
     public $is_encrypted = true;
     /**
      * @var AtRestCryptoService
@@ -24,6 +27,7 @@ class EncryptedDecimal extends Decimal
 
     public function setValue($value, $record = array())
     {
+    	   $this->setEncryptionKeyFromRecord($record);
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
         } else {
@@ -35,7 +39,7 @@ class EncryptedDecimal extends Decimal
     {
         // Test if we're actually an encrypted value;
         if (ctype_xdigit($value) && strlen($value) > 130) {
-            return $this->service->decrypt($value);
+            return $this->service->decrypt($value, $this->getEncryptionKey());
         }
         return (float)$value;
     }
@@ -64,7 +68,7 @@ class EncryptedDecimal extends Decimal
     public function prepValueForDB($value)
     {
         $value = parent::prepValueForDB($value);
-        $ciphertext = $this->service->encrypt($value);
+        $ciphertext = $this->service->encrypt($value, $this->getEncryptionKey());
         $this->value = $ciphertext;
         return $ciphertext;
     }

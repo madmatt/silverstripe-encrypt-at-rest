@@ -38,6 +38,7 @@ class EncryptDataObjectFieldsExtension extends DataExtension
             foreach ($dbFields as $dbFieldName => $dbFieldType) {
                 $field = $this->owner->dbObject($dbFieldName);
                 if ($this->shouldEncrypt($changedFields, $dbFieldName, $field)) {
+                    $this->updateFieldEncryptionKey($field);
                     $field->prepValueForDB($this->owner->$dbFieldName);
                 }
             }
@@ -68,6 +69,7 @@ class EncryptDataObjectFieldsExtension extends DataExtension
     public function getDecryptedProperty($property)
     {
         $field = $property[1]::create($property[0]);
+	$this->updateFieldEncryptionKey($field);
         $record = $this->owner->getField($property[0]);
         $field->setValue($record, array());
         return $field->getValue();
@@ -95,5 +97,21 @@ class EncryptDataObjectFieldsExtension extends DataExtension
             }
         }
         return $methods;
+    }
+	
+    /**
+     * Checks whether the owner DataObject has a provideEncryptionKey() method and if it does, passes the encryption key
+     * returned by that method to $field. This makes the encryption (and decryption) to use a custom key rather than the global ENCRYPT_AT_REST_KEY key.
+     *
+     * If provideEncryptionKey() returns null, then the field will use the default key instead of a custom one.
+     *
+     * @param DBField $field The field where the (possible) custom key should be applied to.
+     */
+    private function updateFieldEncryptionKey(DBField $field)
+    {
+    	if ($this->owner->hasMethod('provideEncryptionKey'))
+	{
+	    $field->setEncryptionKey($this->owner->provideEncryptionKey($field->getName(), $field->class));
+	}
     }
 }
