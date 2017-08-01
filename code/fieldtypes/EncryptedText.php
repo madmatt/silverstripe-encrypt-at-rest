@@ -1,6 +1,11 @@
 <?php
+
+require_once 'EncryptedFieldTrait.php'; //Traits are not auto-loaded by SilverStripe
+
 class EncryptedText extends Text
 {
+    use EncryptedFieldTrait;
+    
     public $is_encrypted = true;
 
     /**
@@ -16,6 +21,7 @@ class EncryptedText extends Text
 
     public function setValue($value, $record = array())
     {
+    	   $this->setEncryptionKeyFromRecord($record);
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
         } else {
@@ -28,7 +34,7 @@ class EncryptedText extends Text
         // Test if we're actually an encrypted value;
         if (ctype_xdigit($value) && strlen($value) > 130) {
             try {
-                return $this->service->decrypt($value);
+                return $this->service->decrypt($value, $this->getEncryptionKey());
             } catch (Exception $e) {
                 // We were unable to decrypt. Possibly a false positive, but return the unencrypted value
                 return $value;
@@ -61,7 +67,7 @@ class EncryptedText extends Text
     public function prepValueForDB($value)
     {
         $value = parent::prepValueForDB($value);
-        $ciphertext = $this->service->encrypt($value);
+        $ciphertext = $this->service->encrypt($value, $this->getEncryptionKey());
         $this->value = $ciphertext;
         return $ciphertext;
     }

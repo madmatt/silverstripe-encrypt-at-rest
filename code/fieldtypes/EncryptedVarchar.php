@@ -1,5 +1,7 @@
 <?php
 
+require_once 'EncryptedFieldTrait.php'; //Traits are not auto-loaded by SilverStripe
+
 /**
  * Class EncryptedVarchar
  * @package EncryptAtRest\Fieldtypes
@@ -9,7 +11,8 @@
  */
 class EncryptedVarchar extends Varchar
 {
-
+    use EncryptedFieldTrait;
+    
     public $is_encrypted = true;
     /**
      * @var AtRestCryptoService
@@ -24,6 +27,7 @@ class EncryptedVarchar extends Varchar
 
     public function setValue($value, $record = array())
     {
+    	   $this->setEncryptionKeyFromRecord($record);
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
         } else {
@@ -36,7 +40,7 @@ class EncryptedVarchar extends Varchar
         // Test if we're actually an encrypted value;
         if (ctype_xdigit($value) && strlen($value) > 130) {
             try {
-                return $this->service->decrypt($value);
+                return $this->service->decrypt($value, $this->getEncryptionKey());
             } catch (Exception $e) {
                 // We were unable to decrypt. Possibly a false positive, but return the unencrypted value
                 return $value;
@@ -69,7 +73,7 @@ class EncryptedVarchar extends Varchar
     public function prepValueForDB($value)
     {
         $value = parent::prepValueForDB($value);
-        $ciphertext = $this->service->encrypt($value);
+        $ciphertext = $this->service->encrypt($value, $this->getEncryptionKey());
         $this->value = $ciphertext;
         return $ciphertext;
     }

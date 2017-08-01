@@ -17,7 +17,28 @@ In your DataObject, use EncryptedDBField, to have it encrypted. At this point, e
 Set a key in your `_ss_environment` file. 
  
  ```define('ENCRYPT_AT_REST_KEY', 'mysupersecretlonghexkeyhere1234567890');```
+ 
+### DataObject specific encryption keys
+ 
+Another, optional and advanced way to define the key is to create an optional method in your DataObject class:
+ 
+```PHP
+class MyDataObject extends DataObject
+{
+    private static $db = array(
+        'MyEncryptedField' => 'EncryptedText'
+    );
+    
+    public function provideEncryptionKey($field_name, $field_type)
+    {
+        return *A custom key here*;
+    }
+}
+```
 
+This way you can have multiple keys and you are able to decide which key to use in which situation. You are allowed to return either a Defuse\Crypto\Key object or a plain string presentation of the key. You can also return just `null`, if you want to stick with the default key defined in the `ENCRYPT_AT_REST_KEY` constant. The latter is also used if you do not create the `provideEncryptionKey()` method at all.
+ 
+ `$field_name` and `$field_type` arguments can be used to get to know which field is being currently encrypted/decrypted. The latter argument tells the data type class of the field, for example `EncryptedText`.
 
 
 
