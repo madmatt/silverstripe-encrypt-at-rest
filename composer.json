@@ -1,30 +1,33 @@
 {
     "name": "madmatt/silverstripe-encrypt-at-rest",
+    "type": "silverstripe-vendormodule",
     "description": "Enable encryption of data at rest (in database)",
-    "version": "0.0.1",
-    "type": "silverstripe-module",
     "keywords": [ "silverstripe", "encryption", "decryption", "encrypt-at-rest" ],
     "homepage": "https://github.com/madmatt/silverstripe-encrypt-at-rest",
     "license": "WTFPL",
-
     "authors": [
         {
             "name": "Matt Peel",
             "email": "matt@silverstripe.com"
         }
     ],
-
     "support": {
         "issues": "https://github.com/madmatt/silverstripe-encrypt-at-rest/issues",
         "source": "https://github.com/madmatt/silverstripe-encrypt-at-rest"
     },
-
     "require": {
-        "silverstripe/framework": "^3.4.5",
-        "defuse/php-encryption": "2.0.x"
+        "silverstripe/framework": "^4.1",
+        "defuse/php-encryption": "^2.2"
     },
-
-    "extra": {
-        "installer-name": "encryptatrest"
-    }
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Madmatt\\EncryptAtRest\\": "src/",
+            "Madmatt\\EncryptAtRest\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
