@@ -1,14 +1,21 @@
 <?php
 
+namespace Madmatt\EncryptAtRest\FieldType;
+
+use Exception;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBVarchar;
+use Madmatt\EncryptAtRest\AtRestCryptoService;
 
 /**
- * Class EncryptedDatetime
+ * Class EncryptedVarchar
  * @package EncryptAtRest\Fieldtypes
  *
- * This class wraps around a SS_Datetime, storing the value in the database as an encrypted string in a varchar field, but
- * returning it to SilverStripe as a decrypted SS_Datetime object.
+ * This class wraps around a Varchar, storing the value in the database as an encrypted string in a larger varchar
+ * field, and returning the decrypted value.
  */
-class EncryptedDatetime extends SS_Datetime
+class EncryptedVarchar extends DBVarchar
 {
 
     public $is_encrypted = true;
@@ -17,13 +24,13 @@ class EncryptedDatetime extends SS_Datetime
      */
     protected $service;
 
-    public function __construct($name)
+    public function __construct($name = null, $size = 255, $options = array())
     {
-        parent::__construct($name);
-        $this->service = Injector::inst()->get('AtRestCryptoService');
+        parent::__construct($name, $size, $options);
+        $this->service = Injector::inst()->get(AtRestCryptoService::class);
     }
 
-    public function setValue($value, $record = array())
+    public function setValue($value, $record = null, $markChanged = true)
     {
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
@@ -34,9 +41,17 @@ class EncryptedDatetime extends SS_Datetime
 
     public function getDecryptedValue($value)
     {
+
+        // var_dump($value, ctype_xdigit($value), strlen($value) > 130);
+
         // Test if we're actually an encrypted value;
         if (ctype_xdigit($value) && strlen($value) > 130) {
-            return $this->service->decrypt($value);
+            try {
+                return $this->service->decrypt($value);
+            } catch (Exception $e) {
+                // We were unable to decrypt. Possibly a false positive, but return the unencrypted value
+                return $value;
+            }
         }
         return $value;
     }
@@ -69,4 +84,5 @@ class EncryptedDatetime extends SS_Datetime
         $this->value = $ciphertext;
         return $ciphertext;
     }
+
 }

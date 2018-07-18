@@ -1,13 +1,21 @@
 <?php
 
+namespace Madmatt\EncryptAtRest\FieldType;
+
+use Exception;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBInt;
+use Madmatt\EncryptAtRest\AtRestCryptoService;
+
 /**
- * Class EncryptedEnum
+ * Class EncryptedInt
  * @package EncryptAtRest\Fieldtypes
  *
- * This class wraps around a Enum, storing the value in the database as an encrypted string in a varchar field, but
- * returning it to SilverStripe as a decrypted Enum object.
+ * This class wraps around an Int, storing the value in the database as an encrypted string in a varchar field, but
+ * returning it to SilverStripe as a decrypted Int object.
  */
-class EncryptedEnum extends Enum
+class EncryptedInt extends DBInt
 {
 
     public $is_encrypted = true;
@@ -16,13 +24,13 @@ class EncryptedEnum extends Enum
      */
     protected $service;
 
-    public function __construct($name)
+    public function __construct($name = null, $defaultVal = 0)
     {
-        parent::__construct($name);
-        $this->service = Injector::inst()->get('AtRestCryptoService');
+        parent::__construct($name, $defaultVal);
+        $this->service = Injector::inst()->get(AtRestCryptoService::class);
     }
 
-    public function setValue($value, $record = array())
+    public function setValue($value, $record = null, $markChanged = true)
     {
         if (array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
@@ -74,18 +82,4 @@ class EncryptedEnum extends Enum
         return $ciphertext;
     }
 
-    /**
-     * Returns the values of this enum as an array, suitable for insertion into
-     * a {@link DropdownField}
-     *
-     * @param boolean
-     *
-     * @return array
-     */
-    public function enumValues($hasEmpty = true) {
-        $this->enum = array();
-        return ($hasEmpty)
-            ? array_merge(array('' => ''), ArrayLib::valuekey($this->enum))
-            : ArrayLib::valuekey($this->enum);
-    }
 }

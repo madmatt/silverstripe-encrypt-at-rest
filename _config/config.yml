@@ -1,9 +1,13 @@
-DataObject:
+SilverStripe\ORM\DataObject:
   extensions:
-    - EncryptDataObjectFieldsExtension
-EncryptDataObjectFieldsExtension:
+    - Madmatt\EncryptAtRest\Extension\EncryptDataObjectFieldsExtension
+Madmatt\EncryptAtRest\Extension\EncryptDataObjectFieldsExtension:
   EncryptedDataObjects:
     - EncryptDataObject
 File:
   allowed_extensions:
     ["enc"]
+
+SilverStripe\Core\Injector\Injector:
+  EncryptedVarchar:
+    class: Madmatt\EncryptAtRest\FieldType\EncryptedVarchar

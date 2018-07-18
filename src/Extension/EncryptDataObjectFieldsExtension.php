@@ -1,5 +1,11 @@
 <?php
 
+namespace Madmatt\EncryptAtRest\Extension;
+
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+
 /**
  * Class EncryptDataObjectFieldsExtension
  * @description DataObjects that contain encrypted fields need the fields to be encrypted and decrypted, without interfering
@@ -12,11 +18,11 @@
 class EncryptDataObjectFieldsExtension extends DataExtension
 {
 
-    protected static $db_mapping = array();
+    protected static $db_mapping = [array()];
 
     /**
      * @config YML
-     * EncryptedDataObjectFieldsExtension:
+     * Madmatt\EncryptAtRest\ExtensionEncryptedDataObjectFieldsExtension:
      *   EncryptedDataObjects:
      *     - MyDataObject
      */
@@ -33,7 +39,7 @@ class EncryptDataObjectFieldsExtension extends DataExtension
         parent::onBeforeWrite();
 
         $dbFields = Config::inst()->get($this->owner->ClassName, 'db', Config::UNINHERITED);
-        $changedFields = (is_array($this->owner->getChangedFields())) ? $this->owner->getChangedFields() : array();
+        $changedFields = (is_array($this->owner->getChangedFields())) ? $this->owner->getChangedFields() : [array()];
         if(is_array($dbFields)) {
             foreach ($dbFields as $dbFieldName => $dbFieldType) {
                 $field = $this->owner->dbObject($dbFieldName);
@@ -69,7 +75,7 @@ class EncryptDataObjectFieldsExtension extends DataExtension
     {
         $field = $property[1]::create($property[0]);
         $record = $this->owner->getField($property[0]);
-        $field->setValue($record, array());
+        $field->setValue($record, [array()]);
         return $field->getValue();
     }
 
@@ -81,12 +87,12 @@ class EncryptDataObjectFieldsExtension extends DataExtension
      */
     public function allMethodNames($bool)
     {
-        $methods = array();
-        $classes = Config::inst()->get('EncryptDataObjectFieldsExtension', 'EncryptedDataObjects');
+        $methods = [];
+        $classes = Config::inst()->get(static::class, 'EncryptedDataObjects');
         if (in_array($this->owner->ClassName, $classes)) {
             $fields = Config::inst()->get($this->owner->ClassName, 'db', Config::UNINHERITED);
             foreach ($fields as $fieldName => $fieldType) {
-                $reflector = Object::create_from_string($fieldType, '')->is_encrypted;
+                $reflector = Injector::inst()->create($fieldType)->is_encrypted;
                 if ($reflector === true) {
                     $callFunction = strtolower('get' . $fieldName);
                     self::$db_mapping[$callFunction] = array($fieldName, $fieldType);
@@ -94,6 +100,7 @@ class EncryptDataObjectFieldsExtension extends DataExtension
                 }
             }
         }
+
         return $methods;
     }
 }
