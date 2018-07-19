@@ -1,5 +1,6 @@
 <?php
 
+namespace Madmatt\EncryptAtRest;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\CannotPerformOperationException;
@@ -9,6 +10,7 @@ use Defuse\Crypto\Exception\InvalidInput;
 use Defuse\Crypto\File;
 use Defuse\Crypto\Key;
 use Ex\CryptoException;
+use SilverStripe\Core\Environment;
 
 class AtRestCryptoService
 {// extends Object {
@@ -94,9 +96,10 @@ class AtRestCryptoService
             return $rawKey;
         }
 
-        if ($rawKey === null && defined('ENCRYPT_AT_REST_KEY')) {
+        $envKey = Environment::getEnv('ENCRYPT_AT_REST_KEY');
+        if ($rawKey === null && $envKey) {
             // Retrieve key from _ss_env, if set
-            $rawKey = ENCRYPT_AT_REST_KEY;
+            $rawKey = $envKey;
         }
 
         if ($rawKey === null) {
