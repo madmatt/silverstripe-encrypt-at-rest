@@ -21,6 +21,8 @@ use SilverStripe\Core\Injector\Injector;
 class AtRestCryptoService
 {
 
+    private const FILE_EXTENSION = '.enc';
+
     /**
      * @param string   $raw
      * @param null|Key $key
@@ -63,9 +65,9 @@ class AtRestCryptoService
         $key = $this->getKey($key);
         try {
             $currentPath = $this->getFullPath($file, $visibility);
-            $encryptedFilename = $currentPath . '.enc';
+            $encryptedFilename = $currentPath . self::FILE_EXTENSION;
             File::encryptFile($currentPath, $encryptedFilename, $key);
-            $filename = $file->getFilename() . '.enc';
+            $filename = $file->getFilename() . self::FILE_EXTENSION;
             $isDeleted = $file->deleteFile();
             $file->File->setField('Filename', $filename);
             $file->write();
@@ -86,7 +88,6 @@ class AtRestCryptoService
                 ->error(sprintf('Encryption exception while parsing "%s": %s', $file->Name, $e->getMessage()));
             return false;
         }
-
     }
 
     /**
@@ -102,11 +103,20 @@ class AtRestCryptoService
         $key = $this->getKey($key);
         try {
             $currentPath = $this->getFullPath($file, $visibility);
-            $filename = str_replace('.enc', '', $file->getFilename());
-            $decryptedFilename = str_replace($file->getFilename(), $filename, $currentPath);
-            File::decryptFile($currentPath, $decryptedFilename, $key);
+
+            if (!$this->str_ends_with($currentPath, self::FILE_EXTENSION)) {
+                throw new InvalidArgumentException(sprintf(
+                    'The file located at %s, does not end in %s',
+                    $currentPath,
+                    self::FILE_EXTENSION
+                ));
+            }
+
+            $decryptedFilepath = str_replace(self::FILE_EXTENSION, '', $currentPath);
+            File::decryptFile($currentPath, $decryptedFilepath, $key);
             $isDeleted = $file->deleteFile();
-            $file->File->setField('Filename', $filename);
+            $newFileName = str_replace(self::FILE_EXTENSION, '', $file->getFilename());
+            $file->File->setField('Filename', $newFileName);
             $file->write();
 
             if ($visibility === AssetStore::VISIBILITY_PROTECTED) {
@@ -184,4 +194,20 @@ class AtRestCryptoService
         return $adapter->applyPathPrefix($fileID);
     }
 
+    /**
+     * @deprecated use https://www.php.net/manual/en/function.str-ends-with.php
+     * @param string $haystack
+     * @param string $needle
+     * @return bool
+     */
+    private function str_ends_with(string $haystack, string $needle): bool
+    {
+        $needleLength = strlen($needle);
+
+        if ($needleLength === 0) {
+            return false;
+        }
+
+        return 0 === substr_compare($haystack, $needle, -$needleLength);
+    }
 }
