@@ -1,5 +1,7 @@
 # silverstripe-encrypt-at-rest
 
+![github actions](https://github.com/madmatt/silverstripe-encrypt-at-rest/actions/workflows/main.yml/badge.svg)
+
 This module allows Silverstripe CMS ORM data to be encrypted before being stored in the database, and automatically decrypted before using within your application. To do this, we use a secret key known only by the web server.
 
 

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/silverstripe/cms/tests/bootstrap.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+  <coverage includeUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">src/</directory>
+    </include>
+    <exclude>
+      <directory suffix=".php">tests/</directory>
+    </exclude>
+  </coverage>
+  <php>
+    <!-- An example key for testing purposes, created with vendor/bin/generate-defuse-key -->
+    <env name="ENCRYPT_AT_REST_KEY" value="def000001ae7b3baf85422b623b0c0236d5c5c389049b4a277a413a2481fd4ebbc153cdf3c52bd3f97e599ca5094e04e52c3cebbab039d7514fa2e449794fdd1217c0ce9" />
+  </php>
+  <testsuite name="silverstripe-encrypt-at-rest">
+    <directory>tests/</directory>
+  </testsuite>
+</phpunit>

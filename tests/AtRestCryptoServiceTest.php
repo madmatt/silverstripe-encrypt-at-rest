@@ -74,6 +74,12 @@ class AtRestCryptoServiceTest extends SapphireTest
             ? $assetStore->getProtectedFilesystem()->getAdapter()
             : $assetStore->getPublicFilesystem()->getAdapter();
 
+        // Check for existence of $adaptor->prefixPath() showing we are using SS5.0+
+        $prefixPath = 'applyPathPrefix';
+        if (method_exists($adapter, 'prefixPath')) {
+            $prefixPath = 'prefixPath';
+        }
+
         $file = File::create();
         $file->setFromString($originalText, $originalFilename);
         $file->write();
@@ -84,7 +90,7 @@ class AtRestCryptoServiceTest extends SapphireTest
             $file->publishFile();
         }
 
-        $oldFilename = $adapter->applyPathPrefix(
+        $oldFilename = $adapter->$prefixPath(
             $strategy->buildFileID(
                 new ParsedFileID(
                     $file->getFilename(),
@@ -102,9 +108,9 @@ class AtRestCryptoServiceTest extends SapphireTest
         $this->assertEquals($originalFilename, $file->getFilename());
 
         if ($visibility === AssetStore::VISIBILITY_PROTECTED) {
-            $this->assertContains('assets/.protected/', $oldFilename);
+            $this->assertStringContainsString('assets/.protected/', $oldFilename);
         } elseif ($visibility === AssetStore::VISIBILITY_PUBLIC) {
-            $this->assertNotContains('assets/.protected/', $oldFilename);
+            $this->assertStringNotContainsString('assets/.protected/', $oldFilename);
         }
 
         /** @var AtRestCryptoService $service */
@@ -114,9 +120,9 @@ class AtRestCryptoServiceTest extends SapphireTest
         $this->assertEquals($originalFilename . '.enc', $encryptedFile->getFilename());
 
         // Confirm the old file has been deleted
-        $this->assertFileNotExists($oldFilename);
+        $this->assertFileDoesNotExist($oldFilename);
 
-        $encryptedFilename = $adapter->applyPathPrefix(
+        $encryptedFilename = $adapter->$prefixPath(
             $strategy->buildFileID(
                 new ParsedFileID(
                     $encryptedFile->getFilename(),
@@ -130,20 +136,21 @@ class AtRestCryptoServiceTest extends SapphireTest
         $this->assertFileExists($encryptedFilename);
 
         if ($visibility === AssetStore::VISIBILITY_PROTECTED) {
-            $this->assertContains('assets/.protected/', $encryptedFilename);
+            $this->assertStringContainsString('assets/.protected/', $encryptedFilename);
         } elseif ($visibility === AssetStore::VISIBILITY_PUBLIC) {
-            $this->assertNotContains('assets/.protected/', $encryptedFilename);
+            $this->assertStringNotContainsString('assets/.protected/', $encryptedFilename);
         }
 
+        $encryptedFileString = $encryptedFile->getString() ?: '';
         // Confirm the new file is encrypted
-        $this->assertFalse(ctype_print($encryptedFile->getString()));
-        $this->assertNotEquals($originalText, $encryptedFile->getString());
+        $this->assertFalse(ctype_print($encryptedFileString));
+        $this->assertNotEquals($originalText, $encryptedFileString);
         $this->assertEquals($originalFilename, $encryptedFile->Name);
         $this->assertEquals($originalFilename . '.enc', $file->getFilename());
 
         // Now decrypt the file back
         $decryptedFile = $service->decryptFile($encryptedFile, null, $visibility);
-        $decryptedFilename = $adapter->applyPathPrefix(
+        $decryptedFilename = $adapter->$prefixPath(
             $strategy->buildFileID(
                 new ParsedFileID(
                     $decryptedFile->getFilename(),
@@ -160,16 +167,16 @@ class AtRestCryptoServiceTest extends SapphireTest
         $this->assertEquals($originalFilename, $decryptedFile->getFilename());
 
         if ($visibility === AssetStore::VISIBILITY_PROTECTED) {
-            $this->assertContains('assets/.protected/', $decryptedFilename);
+            $this->assertStringContainsString('assets/.protected/', $decryptedFilename);
         } elseif ($visibility === AssetStore::VISIBILITY_PUBLIC) {
-            $this->assertNotContains('assets/.protected/', $decryptedFilename);
+            $this->assertStringNotContainsString('assets/.protected/', $decryptedFilename);
         }
 
         // Confirm that original text has been decoded properly
         $this->assertEquals($originalText, $decryptedFile->getString());
 
         // Confirm that encrypted file has been deleted
-        $this->assertFileNotExists($encryptedFilename);
+        $this->assertFileDoesNotExist($encryptedFilename);
     }
 
     /**

@@ -1,0 +1,16 @@
+name: Module CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  ci:
+    name: CI
+    uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
+    with:
+      endtoend: false
+      phpcoverage_force_off: true
+      js: false
