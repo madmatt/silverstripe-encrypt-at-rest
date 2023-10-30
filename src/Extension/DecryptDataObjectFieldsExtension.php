@@ -26,10 +26,9 @@ class DecryptDataObjectFieldsExtension extends DataExtension
      * if so, we decrypt these and inject them into the object during hydration so that the rest of the application only
      * has to deal with the decrypted values everywhere.
      *
-     * @param $record
      * @return array
      */
-    public function augmentHydrateFields($record)
+    public function augmentHydrateFields()
     {
         // Look at $this->owner to determine if it has any encrypted database fields
         $schema = DataObject::getSchema();

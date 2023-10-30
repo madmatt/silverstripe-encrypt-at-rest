@@ -10,7 +10,7 @@ This module allows Silverstripe CMS ORM data to be encrypted before being stored
 
 
 ## Requirements
-* SilverStripe CMS 4.9
+* SilverStripe CMS 5.0
 
 ## Installation
 Install via Composer:

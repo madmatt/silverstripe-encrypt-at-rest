@@ -182,7 +182,7 @@ class AtRestCryptoService
             $fileID = rtrim($filename, '\\/');
         }
 
-        return $adapter->applyPathPrefix($fileID);
+        return $adapter->prefixPath($fileID);
     }
 
 }
