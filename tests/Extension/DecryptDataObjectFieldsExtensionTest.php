@@ -4,6 +4,7 @@ namespace Madmatt\EncryptAtRest\Tests;
 
 use Madmatt\EncryptAtRest\Tests\Model\EncryptedTestDataObject;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DataObject;
 
 /**
  * Test encryption on dataobjects.

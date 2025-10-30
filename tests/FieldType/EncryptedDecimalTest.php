@@ -44,7 +44,7 @@ class EncryptedDecimalTest extends SapphireTest
         $object = EncryptedTestDataObject::get()->byID($id);
 
         // Check that both ways we can access the data is correct
-        $this->assertEquals($expected, $object->DecimalTest);
-        $this->assertEquals($expected, $object->dbObject('DecimalTest')->getValue());
+        $this->assertEquals($expected, (float)$object->DecimalTest);
+        $this->assertEquals($expected, (float)$object->dbObject('DecimalTest')->getValue());
     }
 }

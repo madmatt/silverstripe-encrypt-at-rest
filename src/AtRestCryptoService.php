@@ -47,7 +47,7 @@ class AtRestCryptoService
     public function decrypt($ciphertext, $key = null)
     {
         $key = $this->getKey($key);
-        return Crypto::Decrypt($ciphertext, $key);
+        return trim(Crypto::Decrypt($ciphertext, $key));
     }
 
     /**

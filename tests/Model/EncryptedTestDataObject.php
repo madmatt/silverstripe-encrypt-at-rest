@@ -19,7 +19,7 @@ use SilverStripe\ORM\DataObject;
 class EncryptedTestDataObject extends DataObject implements TestOnly
 {
     private static $table_name = 'EncryptedTestDataObject';
-    
+
     private static $db = array(
         'EncryptedText'   => EncryptedVarchar::class,
         'UnencryptedText' => 'Varchar(255)',

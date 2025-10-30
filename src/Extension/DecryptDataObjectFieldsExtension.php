@@ -2,7 +2,7 @@
 
 namespace Madmatt\EncryptAtRest\Extension;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
@@ -18,7 +18,7 @@ use SilverStripe\ORM\FieldType\DBField;
  * @package EncryptAtRest\Extension
  * @property DecryptDataObjectFieldsExtension|DataObject $owner
  */
-class DecryptDataObjectFieldsExtension extends DataExtension
+class DecryptDataObjectFieldsExtension extends Extension
 {
     /**
      * During hydration of an existing DataObject retrieved from the database, this extension method will be called. We

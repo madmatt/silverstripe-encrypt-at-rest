@@ -5,9 +5,10 @@ namespace Madmatt\EncryptAtRest\FieldType;
 use Exception;
 use Madmatt\EncryptAtRest\Traits\EncryptedFieldGetValueTrait;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Validation\FieldValidation\OptionFieldValidator;
+use SilverStripe\Model\ModelData;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBEnum;
-use SilverStripe\ORM\ArrayLib;
 use Madmatt\EncryptAtRest\AtRestCryptoService;
 
 /**
@@ -26,13 +27,21 @@ class EncryptedEnum extends DBEnum
      */
     protected $service;
 
+    /**
+     * Disable validation added in CMS6 but todo in future release
+     */
+    private static array $field_validators = [
+        OptionFieldValidator::class => null,
+    ];
+
     public function __construct($name = null, $enum = null, $default = 0, $options = [])
     {
         parent::__construct($name, $enum, $default, $options);
+
         $this->service = Injector::inst()->get(AtRestCryptoService::class);
     }
 
-    public function setValue($value, $record = null, $markChanged = true)
+    public function setValue(mixed $value, null|array|ModelData $record = null, bool $markChanged = true): static
     {
         if (is_array($record) && array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
@@ -42,6 +51,8 @@ class EncryptedEnum extends DBEnum
         } else {
             $this->value = $value;
         }
+
+        return $this;
     }
 
     public function getDecryptedValue(string $value = '')
@@ -58,7 +69,7 @@ class EncryptedEnum extends DBEnum
         return $value;
     }
 
-    public function requireField()
+    public function requireField(): void
     {
         $values = array(
             'type'  => 'text',
@@ -72,26 +83,11 @@ class EncryptedEnum extends DBEnum
         DB::require_field($this->tableName, $this->name, $values);
     }
 
-    public function prepValueForDB($value)
+    public function prepValueForDB(mixed $value): array|string|null
     {
         $value = parent::prepValueForDB($value);
         $ciphertext = $this->service->encrypt($value);
         $this->value = $ciphertext;
         return $ciphertext;
-    }
-
-    /**
-     * Returns the values of this enum as an array, suitable for insertion into
-     * a {@link DropdownField}
-     *
-     * @param boolean
-     *
-     * @return array
-     */
-    public function enumValues($hasEmpty = true) {
-        $this->enum = array();
-        return ($hasEmpty)
-            ? array_merge(array('' => ''), ArrayLib::valuekey($this->enum))
-            : ArrayLib::valuekey($this->enum);
     }
 }

@@ -44,7 +44,7 @@ class EncryptedIntTest extends SapphireTest
         $object = EncryptedTestDataObject::get()->byID($id);
 
         // Check that both ways we can access the data is correct
-        $this->assertEquals($expected, $object->IntTest);
-        $this->assertEquals($expected, $object->dbObject('IntTest')->getValue());
+        $this->assertEquals($expected, (int)$object->IntTest);
+        $this->assertEquals($expected, (int)$object->dbObject('IntTest')->getValue());
     }
 }

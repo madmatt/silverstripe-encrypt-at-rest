@@ -182,7 +182,7 @@ class AtRestCryptoServiceTest extends SapphireTest
     /**
      * @see testEncryptFile
      */
-    public function dataEncryptFile()
+    public static function dataEncryptFile(): array
     {
         return [
             ['test-public-filename.txt', 'This is a test file', AssetStore::VISIBILITY_PUBLIC],

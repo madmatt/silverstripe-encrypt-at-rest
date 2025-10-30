@@ -12,7 +12,7 @@ This module allows Silverstripe CMS ORM data to be encrypted before being stored
 
 
 ## Requirements
-* SilverStripe CMS 5.0
+* SilverStripe CMS 6.0
 
 ## Installation
 Install via Composer:
@@ -32,7 +32,7 @@ For development environments you can set this in your `.env` e.g:
 ENCRYPT_AT_REST_KEY="{generated defuse key}"
 ```
 
-For more information view SilverStripe [Environment Management](https://docs.silverstripe.org/en/4/getting_started/environment_management/).
+For more information view SilverStripe [Environment Management](https://docs.silverstripe.org/en/6/getting_started/environment_management/).
 
 ## Usage
 

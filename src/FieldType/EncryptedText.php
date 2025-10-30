@@ -5,6 +5,7 @@ namespace Madmatt\EncryptAtRest\FieldType;
 use Exception;
 use Madmatt\EncryptAtRest\Traits\EncryptedFieldGetValueTrait;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Model\ModelData;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBText;
 use Madmatt\EncryptAtRest\AtRestCryptoService;
@@ -24,7 +25,7 @@ class EncryptedText extends DBText
         $this->service = Injector::inst()->get(AtRestCryptoService::class);
     }
 
-    public function setValue($value, $record = null, $markChanged = true)
+    public function setValue(mixed $value, null|array|ModelData $record = null, bool $markChanged = true): static
     {
         if (is_array($record) && array_key_exists($this->name, $record) && $value === null) {
             $this->value = $record[$this->name];
@@ -34,6 +35,8 @@ class EncryptedText extends DBText
         } else {
             $this->value = $value;
         }
+
+        return $this;
     }
 
     public function getDecryptedValue(string $value = '')
@@ -50,7 +53,7 @@ class EncryptedText extends DBText
         return $value;
     }
 
-    public function requireField()
+    public function requireField(): void
     {
         $values = array(
             'type'  => 'text',
@@ -64,7 +67,7 @@ class EncryptedText extends DBText
         DB::require_field($this->tableName, $this->name, $values);
     }
 
-    public function prepValueForDB($value)
+    public function prepValueForDB(mixed $value): array|string|null
     {
         $value = parent::prepValueForDB($value);
         $ciphertext = $this->service->encrypt($value);
